@@ -23,7 +23,7 @@ const TEMPLATE_KEY = 'campaignTemplates';
 export class EmailMarketingDashboardComponent implements OnInit {
 
   // Match whatever base URL your other services use
-  private api = 'http://localhost:8080/api';
+  private api = 'https://oaklandprobackend.onrender.com/api';
 
   tab: Tab = 'overview';
   showComposer = false;

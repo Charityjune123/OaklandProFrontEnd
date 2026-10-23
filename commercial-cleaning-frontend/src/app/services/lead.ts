@@ -22,7 +22,7 @@ export interface CommercialLead {
   providedIn: 'root'
 })
 export class LeadService {
-  private apiUrl = 'http://localhost:8080/api/leads';
+  private apiUrl = 'https://oaklandprobackend.onrender.com/api/leads';
 
   constructor(private http: HttpClient) {}
 

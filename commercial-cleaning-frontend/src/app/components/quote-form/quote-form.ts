@@ -68,11 +68,11 @@ export class QuoteFormComponent {
     this.lead.estimatedPriceMax = this.estimatedPriceMax;
 
     this.leadService.submitLead(this.lead).subscribe({
-      next: (response) => {
+      next: (response: any) => {
         this.submitted = true;
         this.errorMessage = '';
       },
-      error: (err) => {
+      error: (err: any) => {
         console.log("Error submitting lead", err);
         this.errorMessage = 'Failed to submit quote request. Check backend logs.';
       }

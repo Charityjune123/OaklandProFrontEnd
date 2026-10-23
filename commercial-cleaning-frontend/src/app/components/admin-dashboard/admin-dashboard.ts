@@ -24,9 +24,8 @@ export class AdminDashboardComponent implements OnInit {
   walkthroughMessage = '';
 
   editLead(lead: any) {
-  // Add your edit logic here or leave it empty for now
-  console.log('Editing lead:', lead);
-}
+    console.log('Editing lead:', lead);
+  }
 
   constructor(
     private leadService: LeadService,
@@ -40,12 +39,12 @@ export class AdminDashboardComponent implements OnInit {
   loadLeads(): void {
     this.loading = true;
     this.leadService.getAllLeads().subscribe({
-      next: (data) => {
+      next: (data: CommercialLead[]) => {
         this.leads = data;
         this.loading = false;
         this.errorMessage = '';
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error fetching leads', err);
         this.errorMessage = 'Could not load leads from backend. Ensure Spring Boot is running.';
         this.loading = false;
@@ -90,11 +89,9 @@ export class AdminDashboardComponent implements OnInit {
         this.selectedLeadId = null;
         this.walkthroughDate = '';
         this.walkthroughTime = '';
-        
-        // Refresh leads to update UI state
         this.loadLeads();
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error scheduling walkthrough', err);
         this.walkthroughMessage = 'Could not schedule walkthrough. Check console for details.';
       }
@@ -111,7 +108,7 @@ export class AdminDashboardComponent implements OnInit {
         this.leads = this.leads.filter(lead => lead.id !== leadId);
         this.walkthroughMessage = 'Lead deleted successfully.';
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error deleting lead', err);
         this.errorMessage = 'Could not delete lead.';
       }

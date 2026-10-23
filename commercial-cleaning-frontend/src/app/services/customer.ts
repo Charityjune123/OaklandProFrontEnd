@@ -41,9 +41,9 @@ export interface Invoice {
   providedIn: 'root'
 })
 export class CustomerService {
-  private baseUrl = 'http://localhost:8080/api/customers';
-  private contractUrl = 'http://localhost:8080/api/contracts';
-  private invoiceUrl = 'http://localhost:8080/api/invoices';
+  private baseUrl = 'https://oaklandprobackend.onrender.com/api/customers';
+  private contractUrl = 'https://oaklandprobackend.onrender.com/api/contracts';
+  private invoiceUrl = 'https://oaklandprobackend.onrender.com/api/invoices';
 
   constructor(private http: HttpClient) {}
 

@@ -28,7 +28,7 @@ export interface Walkthrough {
   providedIn: 'root'
 })
 export class WalkthroughService {
-  private baseUrl = 'http://localhost:8080/api/walkthroughs';
+  private baseUrl = 'https://oaklandprobackend.onrender.com/api/walkthroughs';
 
   constructor(private http: HttpClient) {}
 
