@@ -1,0 +1,128 @@
+<div class="admin-container">
+  
+  <!-- Header Bar -->
+  <div class="admin-header">
+    <div class="header-title-group">
+      <h2>Instant Quote Leads</h2>
+      <p>Customers who submitted an Instant Quote request.</p>
+    </div>
+    <div class="header-actions">
+      <button class="refresh-btn" (click)="loadLeads()">
+        <span class="refresh-icon">&#x21bb;</span> View Leads
+      </button>
+    </div>
+  </div>
+
+  <!-- Global Success / Feedback Message -->
+  <div *ngIf="walkthroughMessage" class="alert success-alert">
+    {{ walkthroughMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="alert error-alert">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span>Leads loaded: <strong>{{ leads.length }}</strong></span>
+  </div>
+
+  <!-- LEADS LIST -->
+  <div class="leads-list">
+    <div *ngFor="let lead of leads" class="lead-card">
+         <!-- Edit / Delete Buttons -->
+<button
+  class="action-btn edit-btn"
+  (click)="editLead(lead)">
+  Edit
+</button>
+
+<button
+  class="action-btn delete-btn"
+  (click)="deleteLead(lead.id!)">
+  Delete
+</button>
+      <!-- Card Header -->
+      <div class="lead-card-header">
+        <div class="company-info">
+          <h3>{{ lead.companyName }}</h3>
+          <span class="facility-badge">{{ lead.facilityType }}</span>
+        </div>
+        <div class="lead-status-badge">
+          {{ lead.walkthroughStatus || 'PENDING' }}
+        </div>
+      </div>
+
+      <!-- Details Grid -->
+      <div class="lead-details-grid">
+        <div class="detail-item">
+          <span class="label">Contact</span>
+          <span class="value">{{ lead.contactName }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Email</span>
+          <span class="value"><a [href]="'mailto:' + lead.email">{{ lead.email }}</a></span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Phone</span>
+          <span class="value"><a [href]="'tel:' + lead.phone">{{ lead.phone }}</a></span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Square Footage</span>
+          <span class="value">{{ lead.squareFootage | number }} sq ft</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Frequency</span>
+          <span class="value">{{ lead.cleaningFrequency }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Est. Monthly</span>
+          <span class="value price-range">${{ lead.estimatedPriceMin | number }} - ${{ lead.estimatedPriceMax | number }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Start Date</span>
+          <span class="value">{{ lead.requestedStartDate || 'Asap' }}</span>
+        </div>
+      </div>
+
+      <!-- Footer / Actions -->
+      <div class="lead-card-footer">
+
+        <!-- Schedule Walkthrough Button -->
+        <button
+          *ngIf="selectedLeadId !== lead.id"
+          class="action-btn schedule-trigger-btn"
+          (click)="selectLeadForWalkthrough(lead.id!)">
+          Schedule Walkthrough
+        </button>
+
+        <!-- Walkthrough Form Panel -->
+        <div *ngIf="selectedLeadId === lead.id" class="walkthrough-form-panel">
+          <h4>Schedule Walkthrough</h4>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Date</label>
+              <input type="date" [(ngModel)]="walkthroughDate" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Time</label>
+              <input type="time" [(ngModel)]="walkthroughTime" class="form-control">
+            </div>
+          </div>
+
+          <div class="walkthrough-actions">
+            <button class="action-btn confirm-btn" (click)="scheduleWalkthrough()">
+              Confirm Walkthrough
+            </button>
+            <button class="action-btn cancel-btn" (click)="cancelWalkthrough()">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>

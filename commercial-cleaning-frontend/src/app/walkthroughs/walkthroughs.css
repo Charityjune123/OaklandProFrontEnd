@@ -1,0 +1,365 @@
+:host {
+  --bg: #f2f6f6;
+  --surface: #ffffff;
+  --ink: #16282b;
+  --muted: #5b6f73;
+  --line: #d9e2e3;
+  --accent: #0e7c86;
+  --accent-dark: #0a5f67;
+  --accent-soft: #e3f2f3;
+  --danger: #b42318;
+  --warn: #9a5b0a;
+  display: block;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    --bg: #0f1b1d;
+    --surface: #172629;
+    --ink: #e6efef;
+    --muted: #96aaad;
+    --line: #2b4044;
+    --accent: #3fb6c0;
+    --accent-dark: #6fd0d8;
+    --accent-soft: #19393d;
+    --danger: #f08a80;
+    --warn: #e6b062;
+  }
+}
+
+.walkthroughs-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.page-header h1 {
+  margin: 0 0 4px;
+  font-size: 28px;
+  letter-spacing: -0.01em;
+}
+
+.page-header p {
+  margin: 0 0 20px;
+  color: var(--muted);
+}
+
+button {
+  font: inherit;
+}
+
+button:focus-visible,
+.form-input:focus-visible,
+.form-textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Filters */
+.filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.chip {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.chip.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.status-message {
+  text-align: center;
+  color: var(--muted);
+  padding: 32px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.error-banner {
+  background: color-mix(in srgb, var(--danger) 12%, var(--surface));
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+}
+
+/* Walkthrough card */
+.wt-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+}
+
+.wt-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.wt-top h3 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.wt-sub {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.wt-sub a {
+  color: var(--accent-dark);
+  text-decoration: none;
+}
+
+.wt-sub a:hover {
+  text-decoration: underline;
+}
+
+.wt-when {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.badge-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.wt-info {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.wt-info p {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 4px 0;
+}
+
+.wt-info p span {
+  color: var(--muted);
+}
+
+.wt-notes label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.notes-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.saved {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.wt-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+/* Buttons */
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: var(--accent-dark);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 16px;
+  cursor: pointer;
+}
+
+.btn-danger {
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 16px;
+  cursor: pointer;
+}
+
+.btn-sm {
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-sm:hover {
+  border-color: var(--accent);
+}
+
+/* Badges */
+.badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+}
+
+.badge[data-status='COMPLETED'],
+.badge[data-status='CONVERTED'],
+.badge[data-status='TODAY'] {
+  background: color-mix(in srgb, #1a8f4d 16%, var(--surface));
+  color: #1a8f4d;
+}
+
+.badge[data-status='NO_SHOW'] {
+  background: color-mix(in srgb, var(--warn) 16%, var(--surface));
+  color: var(--warn);
+}
+
+.badge[data-status='LATE'],
+.badge[data-status='CANCELLED'] {
+  background: color-mix(in srgb, var(--danger) 14%, var(--surface));
+  color: var(--danger);
+}
+
+/* Modals and forms */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 25, 28, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+}
+
+.modal-card {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-card h2 {
+  margin: 0 0 6px;
+  font-size: 20px;
+}
+
+.modal-sub {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.form-space {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.form-input,
+.form-textarea {
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 11px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+@media (max-width: 600px) {
+  .wt-top {
+    flex-direction: column;
+  }
+  .wt-when {
+    align-items: flex-start;
+    text-align: left;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,57 @@
+<div class="admin-portal">
+  <div class="portal-header">
+    <span class="portal-badge">ADMIN CONTROL PANEL</span>
+    <h1>Dashboard Overview</h1>
+    <p>Manage your cleaning business operations, leads, and marketing from one place.</p>
+  </div>
+
+  <div class="portal-grid">
+    <!-- Leads Card -->
+    <button class="portal-card leads-card" (click)="viewLeads()">
+      <div class="icon-circle">
+        <span>+</span>
+      </div>
+      <div class="card-content">
+        <h2>Leads</h2>
+        <p>View Instant Quote leads and new client inquiries</p>
+      </div>
+      <span class="card-link">View Leads &rarr;</span>
+    </button>
+
+    <!-- Walkthroughs Card -->
+    <button class="portal-card walkthrough-card" (click)="viewWalkthroughs()">
+      <div class="icon-circle">
+        <span>&#x2713;</span>
+      </div>
+      <div class="card-content">
+        <h2>Walkthroughs</h2>
+        <p>Manage scheduled property walkthroughs</p>
+      </div>
+      <span class="card-link">View Walkthroughs &rarr;</span>
+    </button>
+
+    <!-- Customers Card -->
+    <button class="portal-card customers-card" (click)="viewCustomers()">
+      <div class="icon-circle">
+        <span>&#9679;</span>
+      </div>
+      <div class="card-content">
+        <h2>Customers</h2>
+        <p>View active clients and clean history</p>
+      </div>
+      <span class="card-link">View Customers &rarr;</span>
+    </button>
+
+    <!-- Campaign Manager Card -->
+    <button class="portal-card marketing-card" (click)="viewCampaignManager()">
+      <div class="icon-circle">
+        <span>&#9881;</span>
+      </div>
+      <div class="card-content">
+        <h2>Campaign Manager</h2>
+        <p>Monitor your marketing campaigns and ads</p>
+      </div>
+      <span class="card-link">View Campaigns &rarr;</span>
+    </button>
+  </div>
+</div>

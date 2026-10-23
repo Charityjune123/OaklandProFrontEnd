@@ -1,0 +1,102 @@
+<div class="quote-container">
+  <div class="quote-card">
+    <h2>Commercial Cleaning Estimator</h2>
+    <p class="subtitle">Get a customized instant estimate and book your facility walkthrough.</p>
+
+    <div *ngIf="submitted" class="success-alert">
+      <h3>Request Submitted Successfully!</h3>
+      <p>Estimated Monthly Range: <strong>${{ estimatedPriceMin | number }} - ${{ estimatedPriceMax | number }}</strong></p>
+      <p>Our team will reach out to <strong>{{ lead.companyName }}</strong> shortly.</p>
+    </div>
+
+    <form *ngIf="!submitted" (ngSubmit)="onSubmit()" #leadForm="ngForm">
+      
+      <!-- STEP 1: Facility Info -->
+      <div *ngIf="currentStep === 1" class="step-content">
+        <h3>Step 1: Facility Details</h3>
+        
+        <div class="form-group">
+          <label for="facilityType">Facility Type</label>
+          <select id="facilityType" name="facilityType" [(ngModel)]="lead.facilityType">
+            <option value="Office">Corporate Office</option>
+            <option value="Medical">Medical / Dental Clinic</option>
+            <option value="Industrial">Industrial / Warehouse</option>
+            <option value="Retail">Retail Store / Showroom</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="squareFootage">Approximate Square Footage: {{ lead.squareFootage | number }} sq ft</label>
+          <input type="range" id="squareFootage" name="squareFootage" min="500" max="50000" step="500" [(ngModel)]="lead.squareFootage" class="range-slider">
+        </div>
+
+        <button type="button" class="next-btn" (click)="nextStep()">Next: Service & Pricing</button>
+      </div>
+
+      <!-- STEP 2: Frequency & Cost Estimator -->
+      <div *ngIf="currentStep === 2" class="step-content">
+        <h3>Step 2: Cleaning Frequency</h3>
+
+        <div class="form-group">
+          <label for="cleaningFrequency">How often do you need service?</label>
+          <select id="cleaningFrequency" name="cleaningFrequency" [(ngModel)]="lead.cleaningFrequency">
+            <option value="DAILY">Daily (5 days/week)</option>
+            <option value="WEEKLY">Weekly</option>
+            <option value="BI_WEEKLY">Bi-Weekly</option>
+            <option value="MONTHLY">Monthly</option>
+          </select>
+        </div>
+
+        <div class="estimator-box">
+          <h4>Estimated Monthly Investment</h4>
+          <div class="price-tag">${{ estimatedPriceMin | number }} - ${{ estimatedPriceMax | number }}<span>/mo</span></div>
+          <p class="estimate-note">*Estimated range based on square footage and frequency.</p>
+        </div>
+
+        <div class="button-row">
+          <button type="button" class="back-btn" (click)="prevStep()">Back</button>
+          <button type="button" class="next-btn" (click)="nextStep()">Next: Contact Info</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Contact Details & Submit -->
+      <div *ngIf="currentStep === 3" class="step-content">
+        <h3>Step 3: Where should we send your official quote?</h3>
+
+        <div class="form-group">
+          <label for="companyName">Company Name</label>
+          <input type="text" id="companyName" name="companyName" [(ngModel)]="lead.companyName" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="contactName">Contact Name</label>
+            <input type="text" id="contactName" name="contactName" [(ngModel)]="lead.contactName" required>
+          </div>
+          <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <input type="tel" id="phone" name="phone" [(ngModel)]="lead.phone" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Business Email</label>
+          <input type="email" id="email" name="email" [(ngModel)]="lead.email" required>
+        </div>
+
+        <div class="form-group">
+          <label for="requestedStartDate">Desired Start Date</label>
+          <input type="date" id="requestedStartDate" name="requestedStartDate" [(ngModel)]="lead.requestedStartDate">
+        </div>
+
+        <div *ngIf="errorMessage" class="error-alert">{{ errorMessage }}</div>
+
+        <div class="button-row">
+          <button type="button" class="back-btn" (click)="prevStep()">Back</button>
+          <button type="submit" [disabled]="!leadForm.form.valid" class="submit-btn">Submit Quote Request</button>
+        </div>
+      </div>
+
+    </form>
+  </div>
+</div>

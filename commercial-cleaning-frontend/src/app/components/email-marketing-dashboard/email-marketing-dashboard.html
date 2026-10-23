@@ -1,0 +1,241 @@
+<div class="email-dashboard-container" id="sec-top">
+
+  <div class="topbar">
+    <div class="tabs">
+      <button type="button" [class.active]="tab === 'overview'" (click)="goTo('overview', 'sec-top')">Overview</button>
+      <button type="button" [class.active]="tab === 'templates'" (click)="goTo('templates', 'sec-templates')">Templates</button>
+      <button type="button" [class.active]="tab === 'audience'" (click)="goTo('audience', 'sec-audience')">Audience</button>
+      <button type="button" [class.active]="tab === 'campaigns'" (click)="goTo('campaigns', 'sec-campaigns')">Campaigns</button>
+    </div>
+    <button type="button" class="btn-dark" (click)="openComposer()">+ New campaign</button>
+  </div>
+
+  <!-- Composer (opens from New campaign or a template) -->
+  <div class="card" id="sec-composer" *ngIf="showComposer">
+    <div class="card-head">
+      <h3>Create campaign</h3>
+      <button type="button" class="link" (click)="showComposer = false">Close</button>
+    </div>
+
+    <form (ngSubmit)="onSendCampaign()">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="subject">Email subject</label>
+          <input type="text" id="subject" [(ngModel)]="campaign.subject" name="subject"
+                 placeholder="A free walkthrough for your workspace" required />
+        </div>
+        <div class="form-group">
+          <label for="senderEmail">Sender email</label>
+          <input type="email" id="senderEmail" [(ngModel)]="campaign.senderEmail" name="senderEmail"
+                 placeholder="admin@yourdomain.com" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="htmlContent">Message (HTML)</label>
+        <textarea id="htmlContent" [(ngModel)]="campaign.htmlContent" name="htmlContent" rows="8"
+                  placeholder="<h1>Hello!</h1><p>Your message goes here.</p>" required></textarea>
+      </div>
+
+      <p class="hint">Goes to {{ activeCount | number }} active contacts. Pending contacts are skipped.</p>
+
+      <div class="button-row">
+        <button type="submit" class="btn-dark" [disabled]="isSending">
+          {{ isSending ? 'Sending...' : 'Send campaign' }}
+        </button>
+        <button type="button" class="btn-ghost" (click)="saveAsTemplate()">Save as template</button>
+      </div>
+
+      <div *ngIf="responseMessage" class="alert" [class.success]="isSuccess" [class.error]="!isSuccess">
+        {{ responseMessage }}
+      </div>
+    </form>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat">
+      <span class="stat-label">Active contacts</span>
+      <span class="stat-value">{{ activeCount | number }}</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Sent this month</span>
+      <span class="stat-value">{{ sentThisMonth | number }}</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Open rate</span>
+      <span class="stat-value muted">&mdash;</span>
+      <span class="stat-hint">Needs an email provider</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Bounce rate</span>
+      <span class="stat-value" [class.good]="bouncedCount === 0">{{ bounceRate }}</span>
+      <span class="stat-hint">Keep under 5%</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Unsubscribed</span>
+      <span class="stat-value">{{ unsubscribeRate }}</span>
+      <span class="stat-hint">{{ unsubscribedCount }} contacts</span>
+    </div>
+  </div>
+
+  <div class="notice" *ngIf="pendingCount > 0">
+    <span>{{ pendingCount | number }} contacts are pending. They won't receive campaigns until you confirm they opted in.</span>
+    <button type="button" class="btn-dark btn-small" (click)="reviewPending()">Review pending</button>
+  </div>
+
+  <!-- Sending -->
+  <div class="card" *ngIf="isSending">
+    <div class="card-head">
+      <h3>Sending now: {{ campaign.subject }}</h3>
+      <span class="status-pill">In progress</span>
+    </div>
+    <div class="progress"><div class="progress-bar indeterminate"></div></div>
+    <p class="hint">Sending to {{ activeCount | number }} active contacts. Keep this page open until it finishes.</p>
+  </div>
+
+  <!-- Templates -->
+  <div class="card" id="sec-templates">
+    <div class="card-head">
+      <h3>Templates</h3>
+      <button type="button" class="link" (click)="openComposer()">Create template</button>
+    </div>
+    <div class="template-grid">
+      <button type="button" class="template-card" *ngFor="let t of allTemplates" (click)="useTemplate(t)">
+        <span class="template-band" [ngClass]="t.color">{{ t.icon }}</span>
+        <span class="template-body">
+          <span class="template-name">{{ t.name }}</span>
+          <span class="template-desc">{{ t.description }}</span>
+        </span>
+      </button>
+      <button type="button" class="template-card blank" (click)="useTemplate(blankTemplate)">
+        <span class="template-blank">
+          <span class="template-plus">+</span>
+          <span>Blank</span>
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Import -->
+  <div class="card" id="sec-audience">
+    <h3>Import contacts</h3>
+
+    <label class="dropzone" [class.dragging]="dragging"
+           (dragover)="onDragOver($event)" (dragleave)="dragging = false" (drop)="onDrop($event)">
+      <input type="file" accept=".csv,text/csv" (change)="onFileSelected($event)" hidden />
+      <span class="dropzone-title">Drop a CSV here, or choose a file</span>
+      <span class="dropzone-sub">One email per row. Extra columns are ignored.</span>
+    </label>
+
+    <div class="preview" *ngIf="csvPreview">
+      <span class="preview-file">{{ csvPreview.fileName }}</span>
+      <span class="pill ok">{{ csvPreview.valid | number }} valid</span>
+      <span class="pill warn">{{ csvPreview.duplicates | number }} duplicates</span>
+      <span class="pill bad">{{ csvPreview.invalid | number }} invalid</span>
+    </div>
+
+    <div class="import-row">
+      <label class="consent-check">
+        <input type="checkbox" [(ngModel)]="consentConfirmed" name="consentConfirmed" />
+        Everyone opted in to receive emails from us (adds them as active). Leave unchecked to add them as pending.
+      </label>
+
+      <div class="import-actions">
+        <span class="muted-label">Tag</span>
+        <input class="tag-input" list="tag-options" [(ngModel)]="importTag" name="importTag"
+               placeholder="Oct event list" />
+        <datalist id="tag-options">
+          <option *ngFor="let t of tags" [value]="t"></option>
+        </datalist>
+        <button type="button" class="btn-dark" *ngIf="csvPreview" [disabled]="csvPreview.valid === 0" (click)="importCsv()">
+          Import {{ csvPreview.valid | number }}
+        </button>
+      </div>
+    </div>
+
+    <div class="add-one">
+      <span class="muted-label">Or add one email</span>
+      <input type="email" class="tag-input wide" [(ngModel)]="newEmail" name="newEmail"
+             placeholder="customer@example.com" (keyup.enter)="addSubscriber()" />
+      <button type="button" class="btn-ghost" (click)="addSubscriber()">Add</button>
+    </div>
+
+    <div *ngIf="subscriberMessage" class="alert" [class.success]="subscriberSuccess" [class.error]="!subscriberSuccess">
+      {{ subscriberMessage }}
+    </div>
+  </div>
+
+  <!-- Contacts -->
+  <div class="card" id="sec-contacts">
+    <div class="card-head wrap">
+      <h3>Contacts</h3>
+      <div class="filters">
+        <input type="search" class="filter-input" placeholder="Search emails"
+               [(ngModel)]="search" name="search" (ngModelChange)="onFilterChange()" />
+        <select class="filter-input" [(ngModel)]="statusFilter" name="statusFilter" (ngModelChange)="onFilterChange()">
+          <option value="all">All statuses</option>
+          <option value="active">Active</option>
+          <option value="pending">Pending</option>
+          <option value="unsubscribed">Unsubscribed</option>
+          <option value="bounced">Bounced</option>
+        </select>
+        <select class="filter-input" [(ngModel)]="tagFilter" name="tagFilter" (ngModelChange)="onFilterChange()">
+          <option value="all">All tags</option>
+          <option *ngFor="let t of tags" [value]="t">{{ t }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="campaign-table">
+        <thead><tr><th>Email</th><th>Tag</th><th>Added</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <tr *ngFor="let s of pagedContacts">
+            <td>{{ s.email }}</td>
+            <td>{{ s.tag || '-' }}</td>
+            <td>{{ s.createdAt | date:'MMM d' }}</td>
+            <td><span class="badge" [ngClass]="s.status">{{ s.status }}</span></td>
+            <td class="actions">
+              <button *ngIf="s.status === 'pending'" type="button" class="link" (click)="activateSubscriber(s.id)">Activate</button>
+              <button type="button" class="link muted" (click)="deleteSubscriber(s.id)">Remove</button>
+            </td>
+          </tr>
+          <tr *ngIf="filteredContacts.length === 0">
+            <td colspan="5" class="empty">No contacts match. Import a CSV or add an email above.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pager" *ngIf="filteredContacts.length > 0">
+      <span>Showing {{ rangeStart | number }} to {{ rangeEnd | number }} of {{ filteredContacts.length | number }}</span>
+      <span class="pager-buttons">
+        <button type="button" class="btn-ghost" [disabled]="page === 1" (click)="prevPage()">Previous</button>
+        <span>Page {{ page }} of {{ totalPages }}</span>
+        <button type="button" class="btn-ghost" [disabled]="page === totalPages" (click)="nextPage()">Next</button>
+      </span>
+    </div>
+  </div>
+
+  <!-- Campaign history -->
+  <div class="card" id="sec-campaigns">
+    <h3>Campaigns</h3>
+    <div class="table-responsive">
+      <table class="campaign-table">
+        <thead><tr><th>Subject</th><th>Delivered to</th><th>Date sent</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let c of campaigns">
+            <td>{{ c.subject }}</td>
+            <td><span class="badge sent">{{ c.sentCount | number }} contacts</span></td>
+            <td>{{ c.createdAt | date:'mediumDate' }}</td>
+          </tr>
+          <tr *ngIf="campaigns.length === 0">
+            <td colspan="3" class="empty">No campaigns yet. Pick a template to send your first one.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

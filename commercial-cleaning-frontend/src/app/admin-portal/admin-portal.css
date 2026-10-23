@@ -1,0 +1,135 @@
+.admin-portal {
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px 80px;
+  background: #f8fafc;
+  font-family: inherit;
+}
+
+/* HEADER */
+.portal-header {
+  text-align: center;
+  margin-bottom: 40px;
+  max-width: 600px;
+}
+
+.portal-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  margin-bottom: 12px;
+  border-radius: 20px;
+  background: #e0f2fe;
+  color: #0284c7;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.portal-header h1 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.portal-header p {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 15px;
+}
+
+/* GRID CONTAINER */
+.portal-grid {
+  width: 100%;
+  max-width: 1100px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+/* CARDS */
+.portal-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 28px 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #ffffff;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease-in-out;
+  width: 100%;
+}
+
+.portal-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 20px -3px rgba(15, 23, 42, 0.08);
+  border-color: #cbd5e1;
+}
+
+/* ICON */
+.icon-circle {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* Card Specific Themes */
+.leads-card .icon-circle { background: #eff6ff; color: #2563eb; }
+.walkthrough-card .icon-circle { background: #f0fdf4; color: #16a34a; }
+.customers-card .icon-circle { background: #fdf4ff; color: #c084fc; }
+.marketing-card .icon-circle { background: #fff7ed; color: #ea580c; }
+
+/* TEXT CONTENT */
+.card-content h2 {
+  margin: 0 0 6px;
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.card-content p {
+  margin: 0 0 20px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* CARD LINK FOOTER */
+.card-link {
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.leads-card .card-link { color: #2563eb; }
+.walkthrough-card .card-link { color: #16a34a; }
+.customers-card .card-link { color: #c084fc; }
+.marketing-card .card-link { color: #ea580c; }
+
+/* MOBILE RESPONSIVENESS */
+@media (max-width: 768px) {
+  .portal-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .portal-header h1 {
+    font-size: 26px;
+  }
+}

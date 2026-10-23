@@ -1,0 +1,201 @@
+<div class="walkthroughs-page">
+  <header class="page-header">
+    <h1>Walkthroughs</h1>
+    <p>Visits booked from quote requests. Complete one, then turn the lead into a client.</p>
+  </header>
+
+  @if (error()) {
+    <div class="error-banner" role="alert">{{ error() }}</div>
+  }
+
+  <div class="filters" role="group" aria-label="Filter walkthroughs">
+    <button class="chip" [class.on]="filter() === 'scheduled'" (click)="filter.set('scheduled')">
+      Scheduled ({{ counts().scheduled }})
+    </button>
+    <button class="chip" [class.on]="filter() === 'completed'" (click)="filter.set('completed')">
+      Completed ({{ counts().completed }})
+    </button>
+    <button class="chip" [class.on]="filter() === 'all'" (click)="filter.set('all')">
+      All ({{ counts().all }})
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="status-message">Loading walkthroughs…</div>
+  } @else {
+    @for (w of visible(); track w.id) {
+      <article class="wt-card">
+        <div class="wt-top">
+          <div>
+            <h3>{{ w.lead?.companyName ?? 'Lead ' + w.leadId }}</h3>
+            @if (w.lead; as lead) {
+              <p class="wt-sub">
+                {{ lead.contactName }} &bull;
+                <a [href]="'tel:' + lead.phone">{{ lead.phone }}</a> &bull;
+                <a [href]="'mailto:' + lead.email">{{ lead.email }}</a>
+              </p>
+            } @else {
+              <p class="wt-sub">The original lead was deleted.</p>
+            }
+          </div>
+
+          <div class="wt-when">
+            <strong>{{ w.scheduledDate | date: 'EEE, MMM d' }}</strong>
+            <span>{{ w.scheduledDate | date: 'h:mm a' }}</span>
+            <div class="badge-row">
+              @if (dayFlag(w) === 'late') {
+                <span class="badge" data-status="LATE">Late</span>
+              } @else if (dayFlag(w) === 'today') {
+                <span class="badge" data-status="TODAY">Today</span>
+              }
+              <span class="badge" [attr.data-status]="w.status || 'SCHEDULED'">{{ statusLabel(w.status) }}</span>
+            </div>
+          </div>
+        </div>
+
+        @if (w.lead; as lead) {
+          <div class="wt-info">
+            <p><span>Facility</span> {{ facilityLabel(lead.facilityType) }}</p>
+            <p><span>Size</span> {{ lead.squareFootage | number }} sq ft</p>
+            <p><span>Schedule wanted</span> {{ frequencyLabel(lead.cleaningFrequency) }}</p>
+            <p>
+              <span>Quote estimate</span>
+              {{ lead.estimatedPriceMin | currency: 'USD' : 'symbol' : '1.0-0' }} to
+              {{ lead.estimatedPriceMax | currency: 'USD' : 'symbol' : '1.0-0' }} a month
+            </p>
+            @if (lead.requestedStartDate) {
+              <p><span>Wants to start</span> {{ lead.requestedStartDate | date: 'mediumDate' }}</p>
+            }
+          </div>
+        }
+
+        <div class="wt-notes">
+          <label>Walkthrough notes</label>
+          <textarea
+            class="form-textarea"
+            rows="3"
+            maxlength="500"
+            placeholder="Measurements, access, alarm panel, areas to skip, special requests"
+            [ngModel]="draftFor(w)"
+            (ngModelChange)="setDraft(w, $event)"
+          ></textarea>
+          <div class="notes-row">
+            @if (savedId() === w.id) {
+              <span class="saved">Saved</span>
+            }
+            <button class="btn-sm" (click)="saveNotes(w)">Save notes</button>
+          </div>
+        </div>
+
+        <div class="wt-actions">
+          @if (w.status === 'SCHEDULED') {
+            <button class="btn-primary" (click)="setStatus(w, 'COMPLETED')">Mark completed</button>
+            <button class="btn-secondary" (click)="openReschedule(w)">Reschedule</button>
+            <button class="btn-secondary" (click)="setStatus(w, 'NO_SHOW')">No-show</button>
+            <button class="btn-danger" (click)="setStatus(w, 'CANCELLED')">Cancel</button>
+          } @else if (w.status === 'COMPLETED') {
+            <button class="btn-primary" (click)="openConvert(w)">Convert to client</button>
+            <button class="btn-secondary" (click)="openReschedule(w)">Schedule again</button>
+          } @else if (w.status === 'NO_SHOW' || w.status === 'CANCELLED') {
+            <button class="btn-secondary" (click)="openReschedule(w)">Schedule again</button>
+          }
+        </div>
+      </article>
+    } @empty {
+      <div class="status-message">
+        @if (filter() === 'scheduled') {
+          No walkthroughs on the calendar. Schedule one from a lead and it will show up here.
+        } @else if (filter() === 'completed') {
+          No completed walkthroughs waiting. Mark a visit completed to convert it to a client.
+        } @else {
+          No walkthroughs yet.
+        }
+      </div>
+    }
+  }
+
+  <!-- Reschedule -->
+  @if (rescheduleTarget(); as target) {
+    <div class="modal-overlay">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-label="Reschedule walkthrough">
+        <h2>Pick a new time</h2>
+        <p class="modal-sub">{{ target.lead?.companyName }}</p>
+        <form (ngSubmit)="saveReschedule()" class="form-space">
+          <div class="form-group">
+            <label>Date and time</label>
+            <input type="datetime-local" [(ngModel)]="rescheduleValue" name="when" required class="form-input" />
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" (click)="rescheduleTarget.set(null)">Cancel</button>
+            <button type="submit" class="btn-primary">Save time</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Convert to client -->
+  @if (convertTarget(); as target) {
+    <div class="modal-overlay">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-label="Convert to client">
+        <h2>Add {{ target.lead?.companyName }} as a client</h2>
+        <p class="modal-sub">
+          This creates the client and their cleaning contract. Your walkthrough notes become their job notes.
+        </p>
+
+        @if (convertError()) {
+          <div class="error-banner" role="alert">{{ convertError() }}</div>
+        }
+
+        <form (ngSubmit)="confirmConvert()" class="form-space">
+          <div class="form-group">
+            <label>Service address</label>
+            <textarea [(ngModel)]="convertForm.address" name="address" rows="2" class="form-textarea" placeholder="Street, city, state, ZIP"></textarea>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Facility type</label>
+              <input type="text" [(ngModel)]="convertForm.facilityType" name="facilityType" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label>Square footage</label>
+              <input type="number" min="0" [(ngModel)]="convertForm.squareFootage" name="squareFootage" class="form-input" />
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Frequency</label>
+              <select [(ngModel)]="convertForm.frequency" name="frequency" class="form-input">
+                <option value="DAILY">Daily</option>
+                <option value="WEEKLY">Weekly</option>
+                <option value="BI-WEEKLY">Bi-weekly</option>
+                <option value="MONTHLY">Monthly</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Agreed amount ($ per month)</label>
+              <input type="number" min="0" step="0.01" [(ngModel)]="convertForm.agreedAmount" name="agreedAmount" class="form-input" />
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>First clean</label>
+              <input type="date" [(ngModel)]="convertForm.startDate" name="startDate" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label>Who cleans this site</label>
+              <select [(ngModel)]="convertForm.assignedTo" name="assignedTo" class="form-input">
+                <option value="OWNER">You</option>
+                <option value="EMPLOYEE">Employee</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" (click)="closeConvert()">Cancel</button>
+            <button type="submit" class="btn-primary">Create client and contract</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

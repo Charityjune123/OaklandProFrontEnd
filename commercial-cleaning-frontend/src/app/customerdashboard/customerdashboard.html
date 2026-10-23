@@ -1,0 +1,314 @@
+<div class="customer-dashboard">
+  <header class="dashboard-header">
+    <div>
+      <h1>Clients</h1>
+      <p>Commercial accounts, cleaning contracts, and invoices.</p>
+    </div>
+    <button class="btn-primary" (click)="showAddModal.set(true)">Add client</button>
+  </header>
+
+  @if (error()) {
+    <div class="error-banner" role="alert">{{ error() }}</div>
+  }
+
+  <section class="stats">
+    <div class="stat">
+      <span class="stat-value">{{ customers().length }}</span>
+      <span class="stat-label">Clients</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value">{{ unpaidInvoices().length }}</span>
+      <span class="stat-label">Unpaid invoices</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value">{{ unpaidTotal() | currency }}</span>
+      <span class="stat-label">Waiting to be paid</span>
+    </div>
+  </section>
+
+  <!-- This week -->
+  <section class="week-card">
+    <div class="section-header-row">
+      <h3>This week</h3>
+      <span class="week-count">{{ weekVisits().length }} to do</span>
+    </div>
+
+    @for (v of weekVisits(); track v.contract.id) {
+      <div class="visit-row">
+        <div class="visit-main">
+          <strong>{{ v.customer.companyName }}</strong>
+          <span class="visit-sub">
+            {{ v.customer.address }} &bull; {{ v.contract.squareFootage | number }} sq ft &bull; {{ frequencyLabel(v.contract.frequency) }}
+          </span>
+          @if (v.customer.notes) {
+            <span class="visit-notes">{{ v.customer.notes }}</span>
+          }
+        </div>
+
+        <div class="visit-when">
+          <span>{{ v.contract.nextCleanDate | date: 'EEE, MMM d' }}</span>
+          @if (v.contract.nextCleanDate < today) {
+            <span class="badge" data-status="OVERDUE">Late</span>
+          } @else if (v.contract.nextCleanDate === today) {
+            <span class="badge" data-status="ACTIVE">Today</span>
+          }
+        </div>
+
+        <select
+          class="form-input assign-select"
+          [ngModel]="v.contract.assignedTo || 'OWNER'"
+          (ngModelChange)="assign(v.contract, $event)"
+          aria-label="Who cleans this site"
+        >
+          <option value="OWNER">You</option>
+          <option value="EMPLOYEE">Employee</option>
+        </select>
+
+        <button class="btn-sm" (click)="markDone(v.contract)">Mark done</button>
+      </div>
+    } @empty {
+      <div class="empty-sm">Nothing due in the next 7 days.</div>
+    }
+  </section>
+
+  <div class="dashboard-layout" [class.with-sidebar]="selectedCustomer()">
+    <!-- Client table -->
+    <div class="table-container">
+      <div class="table-toolbar">
+        <input
+          type="search"
+          class="form-input"
+          placeholder="Search by company, contact, email, or address"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+          aria-label="Search clients"
+        />
+      </div>
+
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Contact</th>
+            <th>Email / phone</th>
+            <th>Address</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of filteredCustomers(); track c.id) {
+            <tr (click)="selectCustomer(c)" [class.active-row]="selectedCustomer()?.id === c.id">
+              <td class="font-semibold">{{ c.companyName }}</td>
+              <td>{{ c.contactName }}</td>
+              <td>{{ c.email }}<br /><span class="phone-sub">{{ c.phone }}</span></td>
+              <td class="address-text">{{ c.address }}</td>
+              <td class="text-right" (click)="$event.stopPropagation()">
+                <button class="action-btn-edit" (click)="selectCustomer(c)">View</button>
+                <button class="action-btn-delete" (click)="deleteCustomer(c.id)">Delete</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="empty-state">
+                @if (search()) {
+                  No clients match "{{ search() }}".
+                } @else {
+                  No clients yet. Add your first one to start building their cleaning schedule.
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Client detail sidebar -->
+    @if (selectedCustomer(); as customer) {
+      <aside class="customer-sidebar">
+        <div class="sidebar-header">
+          <div>
+            <h2>{{ customer.companyName }}</h2>
+            <p>{{ customer.contactName }} &bull; {{ customer.phone }}</p>
+            <p>{{ customer.address }}</p>
+          </div>
+          <button class="close-btn" (click)="closeDetails()" aria-label="Close details">&times;</button>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="section-header-row">
+            <h3>Job notes</h3>
+            <span>
+              @if (notesSaved()) {
+                <span class="saved">Saved</span>
+              }
+              <button class="btn-sm" (click)="saveNotes()">Save notes</button>
+            </span>
+          </div>
+          <textarea
+            class="form-textarea"
+            rows="4"
+            placeholder="Key location, alarm panel, parking, areas to skip"
+            [(ngModel)]="notesDraft"
+          ></textarea>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="section-header-row">
+            <h3>Service contracts</h3>
+            <button class="btn-sm" (click)="showContractModal.set(true)">Add contract</button>
+          </div>
+
+          @for (contract of contracts(); track contract.id) {
+            <div class="contract-card">
+              <div class="contract-top">
+                <strong>{{ contract.facilityType }}</strong>
+                <span class="badge" [attr.data-status]="contract.status">{{ contract.status }}</span>
+              </div>
+              <p><span>Schedule</span> {{ frequencyLabel(contract.frequency) }}</p>
+              <p><span>Next clean</span> {{ contract.nextCleanDate | date: 'mediumDate' }}</p>
+              <p><span>Size</span> {{ contract.squareFootage | number }} sq ft</p>
+              <p><span>Agreed amount</span> {{ contract.agreedAmount | currency }}</p>
+              <p><span>Started</span> {{ contract.startDate | date: 'mediumDate' }}</p>
+              <p><span>Cleaned by</span> {{ contract.assignedTo === 'EMPLOYEE' ? 'Employee' : 'You' }}</p>
+              <p><span>Last clean</span> {{ contract.lastCleanDate ? (contract.lastCleanDate | date: 'mediumDate') : 'Not yet' }}</p>
+              <button class="btn-sm" (click)="openInvoiceModal(contract)">Create invoice</button>
+            </div>
+          } @empty {
+            <div class="empty-sm">No contracts yet. Add one to set this client's cleaning schedule and price.</div>
+          }
+        </div>
+
+        <div class="sidebar-section">
+          <div class="section-header-row">
+            <h3>Invoices</h3>
+          </div>
+
+          @for (inv of customerInvoices(); track inv.id) {
+            <div class="invoice-row">
+              <div>
+                <strong>{{ inv.amount | currency }}</strong>
+                <span class="invoice-sub">{{ contractLabel(inv.contractId) }} &bull; due {{ inv.dueDate | date: 'MMM d' }}</span>
+              </div>
+              <span class="badge" [attr.data-status]="inv.status">{{ inv.status }}</span>
+            </div>
+          } @empty {
+            <div class="empty-sm">No invoices for this client yet.</div>
+          }
+        </div>
+      </aside>
+    }
+  </div>
+
+  <!-- Add client -->
+  @if (showAddModal()) {
+    <div class="modal-overlay">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-label="Add client">
+        <h2>Add client</h2>
+        <form (ngSubmit)="saveCustomer()" class="form-space">
+          <div class="form-group">
+            <label>Company name</label>
+            <input type="text" [(ngModel)]="newCustomer.companyName" name="companyName" required class="form-input" />
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Contact name</label>
+              <input type="text" [(ngModel)]="newCustomer.contactName" name="contactName" required class="form-input" />
+            </div>
+            <div class="form-group">
+              <label>Phone</label>
+              <input type="tel" [(ngModel)]="newCustomer.phone" name="phone" required class="form-input" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" [(ngModel)]="newCustomer.email" name="email" required class="form-input" />
+          </div>
+          <div class="form-group">
+            <label>Service address</label>
+            <textarea [(ngModel)]="newCustomer.address" name="address" rows="2" required class="form-textarea"></textarea>
+          </div>
+          <div class="modal-actions">
+            <button type="button" (click)="showAddModal.set(false)" class="btn-secondary">Cancel</button>
+            <button type="submit" class="btn-primary">Save client</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Add contract -->
+  @if (showContractModal()) {
+    <div class="modal-overlay">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-label="Add contract">
+        <h2>Add service contract</h2>
+        <form (ngSubmit)="saveContract()" class="form-space">
+          <div class="form-group">
+            <label>Facility type</label>
+            <input type="text" [(ngModel)]="newContract.facilityType" name="facilityType" placeholder="e.g. Corporate office" required class="form-input" />
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Square footage</label>
+              <input type="number" min="0" [(ngModel)]="newContract.squareFootage" name="squareFootage" required class="form-input" />
+            </div>
+            <div class="form-group">
+              <label>Frequency</label>
+              <select [(ngModel)]="newContract.frequency" name="frequency" class="form-input">
+                <option value="DAILY">Daily</option>
+                <option value="WEEKLY">Weekly</option>
+                <option value="BI-WEEKLY">Bi-weekly</option>
+                <option value="MONTHLY">Monthly</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Agreed amount ($)</label>
+              <input type="number" min="0" step="0.01" [(ngModel)]="newContract.agreedAmount" name="agreedAmount" required class="form-input" />
+            </div>
+            <div class="form-group">
+              <label>First clean</label>
+              <input type="date" [(ngModel)]="newContract.startDate" name="startDate" required class="form-input" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Who cleans this site</label>
+            <select [(ngModel)]="newContract.assignedTo" name="assignedTo" class="form-input">
+              <option value="OWNER">You</option>
+              <option value="EMPLOYEE">Employee</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button type="button" (click)="showContractModal.set(false)" class="btn-secondary">Cancel</button>
+            <button type="submit" class="btn-primary">Save contract</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Create invoice -->
+  @if (showInvoiceModal()) {
+    <div class="modal-overlay">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-label="Create invoice">
+        <h2>Create invoice</h2>
+        <form (ngSubmit)="saveInvoice()" class="form-space">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Amount ($)</label>
+              <input type="number" min="0" step="0.01" [(ngModel)]="newInvoice.amount" name="invoiceAmount" required class="form-input" />
+            </div>
+            <div class="form-group">
+              <label>Due date</label>
+              <input type="date" [(ngModel)]="newInvoice.dueDate" name="invoiceDue" required class="form-input" />
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" (click)="showInvoiceModal.set(false)" class="btn-secondary">Cancel</button>
+            <button type="submit" class="btn-primary">Create invoice</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>
