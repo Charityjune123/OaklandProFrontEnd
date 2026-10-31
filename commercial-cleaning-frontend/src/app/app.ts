@@ -119,6 +119,9 @@ import { AuthService } from './auth.service';
 
 <div *ngIf="currentView === 'admin' && auth.loggedIn()" class="page-fade">
   <button (click)="auth.logout()">Log out</button>
+    <button *ngIf="adminView !== 'portal'" (click)="adminView = 'portal'" style="margin-left:8px;">
+    &larr; Back to Dashboard
+  </button>
 
   <app-admin-portal
   *ngIf="adminView === 'portal'"
